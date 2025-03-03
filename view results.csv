@@ -1,0 +1,30 @@
+import xml.etree.ElementTree as ET
+import csv
+
+# Parse XML
+tree = ET.parse("test_plan.jmx")  # Replace with your JMeter XML file
+root = tree.getroot()
+
+# Extract relevant fields
+test_name = root.find(".//HTTPSamplerProxy").attrib["testname"]
+domain = root.find(".//stringProp[@name='HTTPSampler.domain']").text
+port = root.find(".//stringProp[@name='HTTPSampler.port']").text
+path = root.find(".//stringProp[@name='HTTPSampler.path']").text
+method = root.find(".//stringProp[@name='HTTPSampler.method']").text
+
+# Extract parameters
+params = []
+for param in root.findall(".//elementProp[@elementType='HTTPArgument']"):
+    name = param.find(".//stringProp[@name='Argument.name']").text
+    value = param.find(".//stringProp[@name='Argument.value']").text
+    params.append(f"{name}={value}")
+
+params_str = ", ".join(params)
+
+# Write to CSV
+with open("test_plan.csv", "w", newline="") as file:
+    writer = csv.writer(file)
+    writer.writerow(["Test Name", "Domain", "Port", "Path", "Method", "Parameters"])
+    writer.writerow([test_name, domain, port, path, method, params_str])
+
+print("Conversion complete! CSV file saved as test_plan.csv")
